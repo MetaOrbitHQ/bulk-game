@@ -11,6 +11,7 @@
     --food:#10b981;
     --grid:#1e293b;
     --text:#e6eef6;
+    --accent:#7c3aed;
   }
   body {
     background: var(--bg);
@@ -19,49 +20,66 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
+    justify-content:flex-start;
     height:100vh;
     margin:0;
+    padding-top:20px;
   }
-  h1 { margin:12px 0; }
+  h1 {
+    margin:8px 0; font-size:28px;
+  }
   .handle { color:#9aa4b2; margin-bottom:16px; }
+  #dashboard { display:flex; gap:16px; margin-bottom:12px; align-items:center; }
+  #scoreBoard {
+    font-size:18px;
+    padding:6px 12px;
+    border-radius:12px;
+    background:rgba(124,58,237,0.2);
+  }
+  button {
+    padding:8px 16px;
+    border:none;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+    background:var(--accent);
+    color:white;
+  }
+  button:hover{ opacity:0.85; }
   #gameCanvas {
-    background: var(--grid);
+    background: linear-gradient(135deg, #111b34 0%, #070f1d 100%);
     display:block;
     border:2px solid var(--snake);
-  }
-  #scoreBoard {
-    margin-top:12px;
-    font-size:18px;
+    box-shadow:0 0 20px rgba(124,58,237,0.4);
   }
   #gameOver {
     position:absolute;
     top:50%;
-    transform:translateY(-50%);
-    background:rgba(0,0,0,0.8);
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(0,0,0,0.85);
     padding:24px 36px;
     border-radius:16px;
     text-align:center;
     display:none;
+    color:var(--text);
   }
-  #gameOver button {
-    margin-top:12px;
-    padding:8px 16px;
-    border:none;
-    border-radius:8px;
-    background:#7c3aed;
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-  }
+  #gameOver button { margin-top:12px; }
 </style>
 </head>
 <body>
 
 <h1>BULK Snake Game</h1>
 <div class="handle">@bulktrade</div>
+
+<div id="dashboard">
+  <div id="scoreBoard">BULK Score: 0</div>
+  <button id="startBtn">Start</button>
+  <button id="stopBtn">Stop</button>
+</div>
+
 <canvas id="gameCanvas" width="400" height="400"></canvas>
-<div id="scoreBoard">Score: 0</div>
+
 <div id="gameOver">
   <h2>Game Over!</h2>
   <p id="finalScore"></p>
@@ -72,47 +90,64 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const grid = 20;
+
 let snake = [{x:8, y:8}];
 let dx = 1;
 let dy = 0;
 let food = {x:5, y:5};
 let score = 0;
-let gameInterval;
+let gameInterval = null;
+let isRunning = false;
 
 function draw() {
+  // Background grid
   ctx.fillStyle = '#0f1724';
   ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle = '#1e293b';
+  for(let x=0;x<=canvas.width;x+=grid){
+    ctx.beginPath();
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,canvas.height);
+    ctx.stroke();
+  }
+  for(let y=0;y<=canvas.height;y+=grid){
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(canvas.width,y);
+    ctx.stroke();
+  }
 
-  // Draw food
+  // Food
   ctx.fillStyle = '#10b981';
   ctx.fillRect(food.x*grid, food.y*grid, grid-2, grid-2);
 
-  // Draw snake
+  // Snake
   ctx.fillStyle = '#7c3aed';
-  snake.forEach((segment,i)=>{
+  snake.forEach((segment)=>{
     ctx.fillRect(segment.x*grid, segment.y*grid, grid-2, grid-2);
   });
 }
 
 function update() {
   const head = {x:snake[0].x+dx, y:snake[0].y+dy};
-  
-  // Check collisions
+
+  // Collision detection
   if(head.x<0 || head.y<0 || head.x>=canvas.width/grid || head.y>=canvas.height/grid || snake.some(s=>s.x===head.x && s.y===head.y)) {
     gameOver();
     return;
   }
-  
+
   snake.unshift(head);
-  
-  // Check food
+
+  // Eating food
   if(head.x === food.x && head.y === food.y){
     score++;
-    document.getElementById('scoreBoard').innerText = 'Score: ' + score;
+    document.getElementById('scoreBoard').innerText = 'BULK Score: ' + score;
     placeFood();
   } else {
     snake.pop();
   }
+
   draw();
 }
 
@@ -133,19 +168,29 @@ function changeDirection(e){
 
 function gameOver(){
   clearInterval(gameInterval);
+  isRunning = false;
   document.getElementById('gameOver').style.display='block';
-  document.getElementById('finalScore').innerText = 'Your Score: ' + score;
+  document.getElementById('finalScore').innerText = 'Your BULK Score: ' + score;
 }
 
 function startGame(){
   snake=[{x:8,y:8}]; dx=1; dy=0; score=0; placeFood();
-  document.getElementById('scoreBoard').innerText='Score: 0';
+  document.getElementById('scoreBoard').innerText='BULK Score: 0';
   document.getElementById('gameOver').style.display='none';
   clearInterval(gameInterval);
   gameInterval = setInterval(update,150);
+  isRunning = true;
+}
+
+function stopGame(){
+  clearInterval(gameInterval);
+  isRunning = false;
 }
 
 document.addEventListener('keydown', changeDirection);
+document.getElementById('startBtn').addEventListener('click',()=>{ if(!isRunning) startGame(); });
+document.getElementById('stopBtn').addEventListener('click',()=>{ if(isRunning) stopGame(); });
+
 startGame();
 </script>
 
