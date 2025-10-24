@@ -3,73 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BULK Snake Game</title>
+<title>BULK Snake Game Dashboard</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
   :root {
-    --bg:#0f1724;
+    --bg1:#0f1724;
+    --bg2:#1a1f3a;
     --snake:#7c3aed;
     --food:#10b981;
-    --grid:#1e293b;
-    --text:#e6eef6;
     --accent:#7c3aed;
+    --text:#e6eef6;
+    --card:#111b34;
   }
+
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: Inter, sans-serif;
+    margin:0; padding:0;
+    font-family:'Inter', sans-serif;
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:flex-start;
-    height:100vh;
-    margin:0;
-    padding-top:20px;
+    min-height:100vh;
+    background: linear-gradient(-45deg, #0f1724, #1a1f3a, #0f1724, #1a1f3a);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: var(--text);
   }
-  h1 {
-    margin:8px 0; font-size:28px;
+
+  @keyframes gradientBG {
+    0% {background-position:0% 50%;}
+    50% {background-position:100% 50%;}
+    100% {background-position:0% 50%;}
   }
-  .handle { color:#9aa4b2; margin-bottom:16px; }
-  #dashboard { display:flex; gap:16px; margin-bottom:12px; align-items:center; }
+
+  h1 { margin:12px 0; font-size:32px; text-shadow:0 0 12px var(--accent); }
+  .handle { color:#9aa4b2; margin-bottom:24px; font-size:16px; }
+
+  #dashboard {
+    display:flex; gap:16px; margin-bottom:16px; align-items:center;
+  }
+
   #scoreBoard {
-    font-size:18px;
-    padding:6px 12px;
-    border-radius:12px;
+    font-size:20px; padding:8px 16px;
+    border-radius:14px;
     background:rgba(124,58,237,0.2);
+    text-shadow:0 0 6px var(--accent);
   }
+
   button {
-    padding:8px 16px;
-    border:none;
-    border-radius:12px;
-    font-weight:600;
-    cursor:pointer;
-    background:var(--accent);
-    color:white;
+    padding:10px 20px; border:none; border-radius:14px;
+    font-weight:600; cursor:pointer; background:var(--accent);
+    color:white; text-shadow:0 0 6px var(--accent);
+    transition:0.3s;
   }
-  button:hover{ opacity:0.85; }
+  button:hover{ box-shadow:0 0 14px var(--accent); transform:scale(1.05); }
+
   #gameCanvas {
-    background: linear-gradient(135deg, #111b34 0%, #070f1d 100%);
-    display:block;
     border:2px solid var(--snake);
-    box-shadow:0 0 20px rgba(124,58,237,0.4);
+    border-radius:16px;
+    box-shadow:0 0 24px rgba(124,58,237,0.5);
+    background: rgba(17,27,52,0.9);
   }
+
   #gameOver {
     position:absolute;
-    top:50%;
-    left:50%;
+    top:50%; left:50%;
     transform:translate(-50%,-50%);
-    background:rgba(0,0,0,0.85);
-    padding:24px 36px;
-    border-radius:16px;
-    text-align:center;
-    display:none;
+    background:rgba(17,27,52,0.95);
+    padding:28px 40px; border-radius:16px;
+    text-align:center; display:none;
     color:var(--text);
+    box-shadow:0 0 28px var(--accent);
   }
-  #gameOver button { margin-top:12px; }
+
+  #gameOver button { margin-top:16px; }
 </style>
 </head>
 <body>
 
-<h1>BULK Snake Game</h1>
+<h1>BULK Snake Dashboard</h1>
 <div class="handle">@bulktrade</div>
 
 <div id="dashboard">
@@ -100,10 +112,10 @@ let gameInterval = null;
 let isRunning = false;
 
 function draw() {
-  // Background grid
-  ctx.fillStyle = '#0f1724';
+  // Animated grid effect
+  ctx.fillStyle = 'rgba(17,27,52,0.95)';
   ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.strokeStyle = '#1e293b';
+  ctx.strokeStyle = 'rgba(29,41,71,0.4)';
   for(let x=0;x<=canvas.width;x+=grid){
     ctx.beginPath();
     ctx.moveTo(x,0);
@@ -123,30 +135,25 @@ function draw() {
 
   // Snake
   ctx.fillStyle = '#7c3aed';
-  snake.forEach((segment)=>{
-    ctx.fillRect(segment.x*grid, segment.y*grid, grid-2, grid-2);
+  snake.forEach(s=>{
+    ctx.fillRect(s.x*grid, s.y*grid, grid-2, grid-2);
   });
 }
 
 function update() {
   const head = {x:snake[0].x+dx, y:snake[0].y+dy};
 
-  // Collision detection
-  if(head.x<0 || head.y<0 || head.x>=canvas.width/grid || head.y>=canvas.height/grid || snake.some(s=>s.x===head.x && s.y===head.y)) {
-    gameOver();
-    return;
+  if(head.x<0 || head.y<0 || head.x>=canvas.width/grid || head.y>=canvas.height/grid || snake.some(s=>s.x===head.x && s.y===head.y)){
+    gameOver(); return;
   }
 
   snake.unshift(head);
 
-  // Eating food
-  if(head.x === food.x && head.y === food.y){
+  if(head.x===food.x && head.y===food.y){
     score++;
-    document.getElementById('scoreBoard').innerText = 'BULK Score: ' + score;
+    document.getElementById('scoreBoard').innerText='BULK Score: '+score;
     placeFood();
-  } else {
-    snake.pop();
-  }
+  } else snake.pop();
 
   draw();
 }
@@ -154,23 +161,23 @@ function update() {
 function placeFood(){
   let newFood;
   do {
-    newFood = {x:Math.floor(Math.random()*(canvas.width/grid)), y:Math.floor(Math.random()*(canvas.height/grid))};
+    newFood={x:Math.floor(Math.random()*(canvas.width/grid)), y:Math.floor(Math.random()*(canvas.height/grid))};
   } while(snake.some(s=>s.x===newFood.x && s.y===newFood.y));
-  food = newFood;
+  food=newFood;
 }
 
 function changeDirection(e){
-  if(e.key==='ArrowUp' && dy!==1){ dx=0; dy=-1;}
-  if(e.key==='ArrowDown' && dy!==-1){ dx=0; dy=1;}
-  if(e.key==='ArrowLeft' && dx!==1){ dx=-1; dy=0;}
-  if(e.key==='ArrowRight' && dx!==-1){ dx=1; dy=0;}
+  if(e.key==='ArrowUp' && dy!==1){dx=0; dy=-1;}
+  if(e.key==='ArrowDown' && dy!==-1){dx=0; dy=1;}
+  if(e.key==='ArrowLeft' && dx!==1){dx=-1; dy=0;}
+  if(e.key==='ArrowRight' && dx!==-1){dx=1; dy=0;}
 }
 
 function gameOver(){
   clearInterval(gameInterval);
-  isRunning = false;
+  isRunning=false;
   document.getElementById('gameOver').style.display='block';
-  document.getElementById('finalScore').innerText = 'Your BULK Score: ' + score;
+  document.getElementById('finalScore').innerText='Your BULK Score: '+score;
 }
 
 function startGame(){
@@ -178,18 +185,18 @@ function startGame(){
   document.getElementById('scoreBoard').innerText='BULK Score: 0';
   document.getElementById('gameOver').style.display='none';
   clearInterval(gameInterval);
-  gameInterval = setInterval(update,150);
-  isRunning = true;
+  gameInterval=setInterval(update,140);
+  isRunning=true;
 }
 
 function stopGame(){
   clearInterval(gameInterval);
-  isRunning = false;
+  isRunning=false;
 }
 
 document.addEventListener('keydown', changeDirection);
-document.getElementById('startBtn').addEventListener('click',()=>{ if(!isRunning) startGame(); });
-document.getElementById('stopBtn').addEventListener('click',()=>{ if(isRunning) stopGame(); });
+document.getElementById('startBtn').addEventListener('click',()=>{if(!isRunning) startGame();});
+document.getElementById('stopBtn').addEventListener('click',()=>{if(isRunning) stopGame();});
 
 startGame();
 </script>
